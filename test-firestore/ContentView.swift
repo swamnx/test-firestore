@@ -13,53 +13,45 @@ struct ContentView: View {
 
     var body: some View {
             NavigationView {
-                ZStack {
-                    LinearGradient(colors: [.red, .yellow, .blue], startPoint: .init(x: 0.2, y: 0.3), endPoint: .init(x: 0.6, y: 0.7))
-                        .ignoresSafeArea()
-
-                    VStack {
-                        HStack {
-                            Spacer()
-                            TextField("User name", text: $contentModel.userName)
-                                .padding()
-                                .font(.largeTitle)
-                            Spacer()
-                        }
-                        Button("Host") {
-                            contentModel.createSession()
-                        }
+                VStack {
+                    Button("Host") {
+                        contentModel.createAndCheckSession()
+                    }
+                    .font(.title)
+                    .padding()
+                    .foregroundColor(.black)
+                    .background(.ultraThickMaterial)
+                    .clipped(antialiased: false)
+                    .clipShape(Capsule())
+                    .padding()
+                    Text("Enter host link")
                         .font(.title)
+                    TextField("host link", text: $contentModel.sessionId)
                         .padding()
-                        .foregroundColor(.black)
-                        .background(.ultraThickMaterial)
-                        .clipped(antialiased: false)
-                        .clipShape(Capsule())
-                        .padding()
-                        NavigationLink(destination: HostView(sessionId: contentModel.sessionId), tag: "host", selection: $contentModel.currentScreen) { EmptyView() }
-
-                        Button("Client") {
-                            contentModel.connectToSession()
-                        }
-                        .font(.title)
-                        .padding()
-                        .foregroundColor(.black)
-                        .background(.ultraThickMaterial)
-                        .clipped(antialiased: false)
-                        .clipShape(Capsule())
-                        .padding()
-                        NavigationLink(destination: ClientView(sessionId: contentModel.sessionId, userId: contentModel.userId, userName: contentModel.userName), tag: "client", selection: $contentModel.currentScreen) { EmptyView() }
-                        HStack {
-                            Spacer()
-                            TextField("fff", text: $contentModel.sessionId)
-                                .padding()
-                                .font(.largeTitle)
-                            Spacer()
+                        .font(.largeTitle)
+                        .multilineTextAlignment(.center)
+                    Button("Client") {
+                        if contentModel.sessionId.isEmpty {
+                            contentModel.errorText = "Host link is empty"
+                            contentModel.showErrorAlert = true
+                        } else {
+                            contentModel.connectToSessionAndCheckForHost()
                         }
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .font(.title)
+                    .padding()
+                    .foregroundColor(.black)
+                    .background(.ultraThickMaterial)
+                    .clipped(antialiased: false)
+                    .clipShape(Capsule())
+                    .padding()
+                    NavigationLink(destination: ClientView(sessionId: contentModel.sessionId, userId: contentModel.userId, userName: contentModel.userName), tag: "client", selection: $contentModel.currentScreen) { EmptyView() }
+                    NavigationLink(destination: HostView(sessionId: contentModel.sessionId).environmentObject(contentModel), tag: "host", selection: $contentModel.currentScreen) { EmptyView() }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .navigationTitle(contentModel.userName)
             }
-            .alert("Error", isPresented: $contentModel.showErrorAlert) {
+            .alert(contentModel.errorText, isPresented: $contentModel.showErrorAlert) {
                 Button("Ok") {}
             }
             .confirmationDialog("Host session is already exists", isPresented: $contentModel.sessionAlreadyExistDialog) {
@@ -69,12 +61,6 @@ struct ContentView: View {
                 Button("Delete session", role:.destructive) {
                     contentModel.deleteSessions()
                 }
-            }
-            .onAppear {
-                if contentModel.userId.isEmpty {
-                    contentModel.userId = UUID.init().uuidString
-                }
-                print($contentModel.userId)
             }
     }
 }

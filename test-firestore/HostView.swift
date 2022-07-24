@@ -11,12 +11,14 @@ struct HostView: View {
 
     var sessionId: String
     @StateObject var hostModel: HostModel = .init()
+    @EnvironmentObject var contentModel: ContentModel
 
     var body: some View {
         VStack {
             Spacer()
             HStack {
-                Button("Close Session") {
+                Button("Back to Home") {
+                    contentModel.currentScreen = "home"
                 }
                 .frame(width: 200, height: 50, alignment: .center)
                 .background(.indigo)

@@ -23,10 +23,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct test_firestoreApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-
+    
+    @AppStorage("userId") var userId: String = ""
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if userId.isEmpty {
+                OnboardingView()
+            } else {
+                ContentView()
+            }
         }
     }
 }
